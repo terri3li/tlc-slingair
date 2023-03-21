@@ -1,38 +1,54 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
+import { useParams } from "react-router-dom";
+import { useRef } from "react";
 
-const Plane = ({ setSelectedSeat, selectedFlight }) => {
+const Plane = ({ setSelectedSeat, selectedSeat, selectedFlight }) => {
+  const [seating, setSeating] = useState([]);
+  
 
-    const [seating, setSeating] = useState([]);
+  useEffect(() => {
+    fetch(`/api/get-flight/${selectedFlight}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data.message)) { 
+          setSeating(data.message);
+        }
+      });
+  }, [selectedFlight]);
 
-    useEffect(() => {
-        // TODO: GET seating data for selected flight
-    }, [selectedFlight]);
+  
 
-    return (
-        <Wrapper>
-            {seating && seating.length > 0 ? (
-                seating.map((seat) => {
-                    return (
-                        <SeatWrapper key={`seat-${seat.id}`}>
-                            <label>
-                                {seat.isAvailable ? (
-                                    <>
-                                        <Seat type="radio" name="seat" onChange={() => {setSelectedSeat(seat.id)}} />
-                                        <Available>{seat.id}</Available>
-                                    </>
-                                ) : (
-                                    <Unavailable>{seat.id}</Unavailable>
-                                )}
-                            </label>
-                        </SeatWrapper>
-                    )
-                })
-            ) : (
-                <Placeholder>Select a Flight to view seating.</Placeholder>
-            )}
-        </Wrapper>
-    );
+  return (
+    <Wrapper>
+      {seating && seating.length > 0 ? (
+        seating.map((seat) => {
+          return (
+            <SeatWrapper key={`seat-${seat.id}`}>
+              <label>
+                {seat.isAvailable ? (
+                  <>
+                    <Seat
+                      type="radio"
+                      name="seat"
+                      onChange={() => {
+                        setSelectedSeat(seat.id);
+                      }}
+                    />
+                    <Available>{seat.id}</Available>
+                  </>
+                ) : (
+                  <Unavailable>{seat.id}</Unavailable>
+                )}
+              </label>
+            </SeatWrapper>
+          );
+        })
+      ) : (
+        <Placeholder>Select a Flight to view seating.</Placeholder>
+      )}
+    </Wrapper>
+  );
 };
 
 const Placeholder = styled.div`
