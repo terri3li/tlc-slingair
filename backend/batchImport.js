@@ -10,7 +10,6 @@ const flight = flightNames.map((flight) => {
   };
 });
 
-console.log(flight);
 
 const { MongoClient } = require("mongodb");
 require("dotenv").config();
@@ -26,7 +25,7 @@ const reservationsBatchImport = async () => {
   const client = new MongoClient(MONGO_URI, options);
   try {
     await client.connect();
-    const db = client.db("slingAir-info");
+    const db = client.db("slingAirInfo");
     const result = await db.collection("reservations").insertMany(reservations);
 
     console.log("success");
@@ -41,7 +40,7 @@ const flightsBatchImport = async () => {
   const client = new MongoClient(MONGO_URI, options);
   try {
     await client.connect();
-    const db = client.db("slingAir-info");
+    const db = client.db("slingAirInfo");
     const result = await db.collection("flights").insertMany(flight);
 
     console.log("success");
@@ -50,3 +49,6 @@ const flightsBatchImport = async () => {
     console.log(error);
   }
 };
+
+reservationsBatchImport();
+flightsBatchImport();

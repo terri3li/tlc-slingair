@@ -13,12 +13,12 @@ const options = {
   useUnifiedTopology: true,
 };
 
-// returns an array of all flight numbers
+// -------- returns an array of all flight numbers
 const getFlights = async (req, res) => {
   const client = new MongoClient(MONGO_URI, options);
   try {
     await client.connect();
-    const db = client.db("slingAir-info");
+    const db = client.db("slingAirInfo");
     const flightsArray = await db.collection("flights").find().toArray();
     const flightNumbers = flightsArray.map((flight) => {
       return flight._id;
@@ -35,14 +35,14 @@ const getFlights = async (req, res) => {
   }
 };
 
-// returns all the seats on a specified flight
+// ---------- returns all the seats on a specified flight
 const getFlight = async (req, res) => {
   const client = new MongoClient(MONGO_URI, options);
   const flightId = req.params.flight;
 
   try {
     await client.connect();
-    const db = client.db("slingAir-info");
+    const db = client.db("slingAirInfo");
     const flightsArray = await db.collection("flights").find().toArray();
     const flight = flightsArray.find((flights) => {
       return flightId === flights.flight;
@@ -68,12 +68,12 @@ const getFlight = async (req, res) => {
   }
 };
 
-// returns all reservations
+// ------------ returns all reservations
 const getReservations = async (req, res) => {
   const client = new MongoClient(MONGO_URI, options);
   try {
     await client.connect();
-    const db = client.db("slingAir-info");
+    const db = client.db("slingAirInfo");
     const allRes = await db.collection("reservations").find().toArray();
 
     res.status(200).json({
@@ -89,14 +89,14 @@ const getReservations = async (req, res) => {
   }
 };
 
-// returns a single reservation
+// --------------- returns a single reservation
 const getSingleReservation = async (req, res) => {
   const client = new MongoClient(MONGO_URI, options);
   const reservationId = req.params.reservation;
 
   try {
     await client.connect();
-    const db = client.db("slingAir-info");
+    const db = client.db("slingAirInfo");
     const allRes = await db.collection("reservations").find().toArray();
 
     const findRes = allRes.find((reservation) => {
@@ -123,7 +123,7 @@ const getSingleReservation = async (req, res) => {
   }
 };
 
-// creates a new reservation
+// ------------- creates a new reservation
 const addReservation = async (req, res) => {
   const client = new MongoClient(MONGO_URI, options);
   console.log(req.body);
@@ -135,7 +135,7 @@ const addReservation = async (req, res) => {
   }
   try {
     await client.connect();
-    const db = client.db("slingAir-info");
+    const db = client.db("slingAirInfo");
     const getRes = await db.collection("reservations").find().toArray();
     const checkSeat = getRes.find((reservation) => {
       return (
@@ -169,7 +169,7 @@ const addReservation = async (req, res) => {
       updatedResult.matchedCount === 1 &&
       updatedResult.modifiedCount === 1
     ) {
-      res.status(201).json({ status: 201, message: reservation});
+      res.status(201).json({ status: 201, message: reservation });
     }
 
     client.close();
@@ -181,13 +181,13 @@ const addReservation = async (req, res) => {
   }
 };
 
-// updates a specified reservation
+// ------- updates a specified reservation (not finished)
 const updateReservation = async (req, res) => {
   const client = new MongoClient(MONGO_URI, options);
 
   try {
     await client.connect();
-    const db = client.db("slingAir-info");
+    const db = client.db("slingAirInfo");
 
     const _id = req.body._id;
     if (_id === undefined) {
@@ -197,13 +197,51 @@ const updateReservation = async (req, res) => {
       });
     }
 
-    // pretty sure I need to use $exists but can't get it to work
+    const userExist = await db.collection("reservations").findOne({ _id });
+    if (!userExist) {
+      return res.status(404).json({
+        status: 404,
+        message: "Reservation does not exist",
+      });
+    }
 
-    const result = await db.collection("reservations").findOne({ _id });
+    const flightsArray = await db.collection("flights").find().toArray();
+    const flight = flightsArray.find((flights) => {
+      return req.body.flight === flights.flight;
+    });
+
+    if (!flight) {
+      return res.status(404).json({
+        status: 404,
+        message: "Is your flight entered correctly?",
+      });
+    }
+
+    const whichSeat = flight.seats.find((seat) => {
+      return seat.id === req.body.seat;
+    });
+
+    if (!whichSeat) {
+      return res.status(404).json({
+        status: 404,
+        message: "Is your seat entered correctly?",
+      });
+    }
+
+    if (whichSeat.isAvailable) {
+      const query = { id: whichSeat.id };
+      const newSeat = { $set: { isAvailable: false } };
+      //not sure how to go about posting to the specific flight
+      const updatedSeat = await db
+        .collection("flights")
+        .updateOne(query, newValues);
+    }
+
+  //need to fix 
     const query = { _id };
     const newValues = { $set: { ...req.body } };
 
-    const updatedResult = await db
+    const updatedRes = await db
       .collection("reservations")
       .updateOne(query, newValues);
 
@@ -218,14 +256,14 @@ const updateReservation = async (req, res) => {
   }
 };
 
-// deletes a specified reservation & seat
+// ------------- deletes a specified reservation & seat
 const deleteReservation = async (req, res) => {
   const client = new MongoClient(MONGO_URI, options);
   const _id = req.params.reservation;
 
   try {
     await client.connect();
-    const db = client.db("slingAir-info");
+    const db = client.db("slingAirInfo");
 
     const findRes = await db.collection("reservations").find().toArray();
     const resToDelete = findRes.find((reservation) => {
