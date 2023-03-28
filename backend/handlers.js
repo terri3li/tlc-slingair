@@ -126,11 +126,17 @@ const getSingleReservation = async (req, res) => {
 // ------------- creates a new reservation
 const addReservation = async (req, res) => {
   const client = new MongoClient(MONGO_URI, options);
-  console.log(req.body);
-  if (req.body.seat === undefined && req.body.flight === undefined) {
+
+  if (
+    !req.body.flight ||
+    !req.body.seat ||
+    !req.body.givenName ||
+    !req.body.surname ||
+    !req.body.email
+  ) {
     return res.status(404).json({
       status: 404,
-      message: "Please make sure a flight & seat are selected",
+      message: "Reservation info missing",
     });
   }
   try {
@@ -143,10 +149,6 @@ const addReservation = async (req, res) => {
         reservation.flight === req.body.flight
       );
     });
-    const createdSeat = { _id: uuidv4(), ...req.body };
-    const updateSeat = await db
-      .collection("reservations")
-      .insertOne(createdSeat);
 
     if (checkSeat !== undefined) {
       return res.status(400).json({
@@ -155,24 +157,41 @@ const addReservation = async (req, res) => {
       });
     }
 
+    const createdSeat = {
+      _id: uuidv4(),
+      flight: req.body.flight,
+      seat: req.body.seat,
+      givenName: req.body.givenName,
+      surname: req.body.surname,
+      email: req.body.email,
+    };
+
+    const updateSeat = await db
+      .collection("reservations")
+      .insertOne(createdSeat);
+
     const updatedResult = await db
       .collection("flights")
       .updateOne(
         { _id: req.body.flight, "seats.id": req.body.seat },
         { $set: { "seats.$.isAvailable": false } }
       );
+   
     if (updatedResult.matchedCount === 0) {
       return res.status(404).json({ status: 404 });
     } else if (updatedResult.modifiedCount === 0) {
-      res.status(409).json({ status: 409 });
+      return res.status(409).json({ status: 409 });
     } else if (
       updatedResult.matchedCount === 1 &&
       updatedResult.modifiedCount === 1
     ) {
-      res.status(201).json({ status: 201, message: reservation });
+      client.close();
+      res.status(201).json({
+        status: 201,
+        message: "Reservation complete!",
+        data: createdSeat._id,
+      });
     }
-
-    client.close();
   } catch (error) {
     res.status(400).json({
       status: 400,
@@ -197,8 +216,8 @@ const updateReservation = async (req, res) => {
       });
     }
 
-    const userExist = await db.collection("reservations").findOne({ _id });
-    if (!userExist) {
+    const foundRes = await db.collection("reservations").findOne({ _id });
+    if (!foundRes) {
       return res.status(404).json({
         status: 404,
         message: "Reservation does not exist",
@@ -229,27 +248,57 @@ const updateReservation = async (req, res) => {
     }
 
     if (whichSeat.isAvailable) {
-      const query = { id: whichSeat.id };
-      const newSeat = { $set: { isAvailable: false } };
-      //not sure how to go about posting to the specific flight
-      const updatedSeat = await db
+      const updatedNewSeat = await db
         .collection("flights")
+        .updateOne(
+          { _id: req.body.flight, "seats.id": req.body.seat },
+          { $set: { "seats.$.isAvailable": false } }
+        );
+
+      const updatedOldSeat = await db
+        .collection("flights")
+        .updateOne(
+          { _id: req.body.flight, "seats.id": foundRes.seat },
+          { $set: { "seats.$.isAvailable": true } }
+        );
+    }
+
+    ////I feel like there is probably a better way to do this? (below)
+    if (
+      !req.body._id ||
+      !req.body.flight ||
+      !req.body.seat ||
+      !req.body.givenName ||
+      !req.body.surname ||
+      !req.body.email
+    ) {
+      return res.status(404).json({
+        status: 404,
+        message: "We need all of your reservation info to update",
+      });
+    } else {
+      const query = { _id };
+      const newValues = {
+        $set: {
+          _id: req.body._id,
+          flight: req.body.flight,
+          seat: req.body.seat,
+          givenName: req.body.givenName,
+          surname: req.body.surname,
+          email: req.body.email,
+        },
+      };
+
+      const updatedRes = await db
+        .collection("reservations")
         .updateOne(query, newValues);
     }
 
-  //need to fix 
-    const query = { _id };
-    const newValues = { $set: { ...req.body } };
-
-    const updatedRes = await db
-      .collection("reservations")
-      .updateOne(query, newValues);
-
+    client.close();
     res.status(200).json({
       status: 200,
       message: "Reservation updated!",
     });
-    client.close();
   } catch (error) {
     console.log(error.message);
     res.status(400).json({ status: 400, message: "Something went wrong" });

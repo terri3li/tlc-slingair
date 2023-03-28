@@ -12,7 +12,7 @@ const Reservation = () => {
     const storedId = JSON.parse(window.localStorage.getItem("ReservationId"));
 
     useEffect(() => {
-    fetch(`/api/get-reservation/${storedId}`)
+    fetch(`/api/get-reservation/${storedId.data}`)
     .then((res) => res.json())
     .then((data) => {
      setConfirmRes(data.data)
@@ -24,18 +24,24 @@ const Reservation = () => {
         <>
     {status === "loading" ? (<h2>Loading...</h2>) : (
         <>
-        <Wrapper>Reservation page</Wrapper>
-        <h2>{confirmRes.flight}</h2>
+        <Wrapper>Your Reservation</Wrapper>
         <h2>{confirmRes._id}</h2>
+        <h2>{confirmRes.flight}</h2>
+        <h2>{confirmRes.seat}</h2>
         <h2>{confirmRes.givenName}</h2>
         <h2>{confirmRes.surname}</h2>
-        <h2>{confirmRes.email}</h2>
+        <Email>{confirmRes.email}</Email>
         </>
         )}
 </>
     )
 };
 
-const Wrapper = styled.div``;
+const Wrapper = styled.h1`
+padding-top: 50px;
+padding-bottom: 40px;`
+
+const Email = styled.h2`
+padding-bottom: 75px;`
 
 export default Reservation;

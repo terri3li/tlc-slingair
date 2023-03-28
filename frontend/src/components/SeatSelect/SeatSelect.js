@@ -28,7 +28,7 @@ const SeatSelect = ({ selectedFlight, setReservationId, reservationId }) => {
     })
       .then((res) => res.json())
       .then((data) => {
-        window.localStorage.setItem("ReservationId", JSON.stringify(reservationId))
+        window.localStorage.setItem("ReservationId", JSON.stringify(data))
           navigate(`/confirmation`);
         }
       )

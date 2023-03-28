@@ -15,10 +15,6 @@ const Header = ({ handleChange, reservationId }) => {
       });
   }, []);
 
-  const isThereARes = () => {
-   /// need to fix 
-  }
-
   return (
     <Wrapper>
       <Container>
@@ -44,9 +40,14 @@ const Header = ({ handleChange, reservationId }) => {
       </Container>
       <Nav>
         <>
-
-        
-          <StyledNavLink visibility={isThereARes}to="/reservation">Reservation</StyledNavLink>
+          <StyledNavLink
+            style={{
+              visibility: localStorage.ReservationId ? "visible" : "hidden",
+            }}
+            to="/reservation"
+          >
+            Reservation
+          </StyledNavLink>
         </>
       </Nav>
     </Wrapper>
@@ -87,8 +88,7 @@ const Nav = styled.nav`
 `;
 
 const StyledNavLink = styled(NavLink)`
-  /* display: ${props => props.visibility? 'block': 'none'}; */
-  visibility: hidden;
+  /* display: ${(props) => (props.visibility ? "block" : "none")}; */
   background: var(--color-selective-yellow);
   border: 1px solid transparent;
   border-radius: 4px;
