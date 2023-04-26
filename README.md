@@ -4,7 +4,7 @@
 
 You just accepted the full-stack developer position at Slingshot Airlines!
 
-They were really impressed with the work you did at Concordia Bootcamps. After a conversation with the CEO at the job fair, they hired you on the spot! They have project that they need to ship ASAP and are confident that you can deliver.
+They were really impressed with the work you did at Concordia. After a conversation with the CEO at the job fair, they hired you on the spot! They have project that they need to ship ASAP and are confident that you can deliver.
 
 They have a new seat-booking app that is set to be released in 3 days! You were told that _most_ of the work is already done, and that all that remains is to connect the different pieces to get it working.
 
@@ -39,35 +39,9 @@ Looks like you're on your own...
 
 ---
 
-## Project Setup
-
-### The Frontend
-
-1. Open a terminal in VS Code
-2. Type `cd frontend`
-3. Type `yarn install`
-
-Use `yarn dev:frontend` to start the frontend dev environment.
-
-### The Backend
-
-1. Open _another_ terminal in VS Code
-2. Type `cd backend`
-3. Type `yarn install`
-
-Use `yarn dev:backend` to start the backend dev environment.
-
-![dual terminal](frontend/src/assets/screenshots/dual_terminal.gif)
-
 ## Developer Notes
 
 There is a folder called `notes` that contains possible hints on what to do next...
-
----
-
-## Requirements for Project Completion
-
-In order for your project to be considered `DONE` (passing grade), you should have a working MVP of the app.
 
 ---
 
@@ -104,10 +78,6 @@ In order for your project to be considered `DONE` (passing grade), you should ha
     - When a request fails, respond with `the data that was sent to the server`. _This makes it easier for FE developers to debug their code._
     - When a request does not need any data to be returned, provide a message explaining the status: i.e. "reservation deleted."
 
-```js
-res.status(200).json({ status: 200, data: {}, message: "" });
-```
-
 ---
 
 ### Frontend
@@ -130,16 +100,6 @@ res.status(200).json({ status: 200, data: {}, message: "" });
 Migrate the data in `backend/data.js` to a brand-new MongoDB database.
 
 In order to incorporate the Database, you will need to setup your backend as it will not use the data in `data.js`, but will use the database to complete all of the requests it receives from the frontend.
-
-**_Recommended structure_:** (for flights collection)
-
-```js
-{
-    _id: "SA231",
-    flight: "SA231",
-    seats: [{...}, {...}, {...}, ...]
-}
-```
 
 ### Stretch
 

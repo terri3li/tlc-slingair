@@ -10,7 +10,6 @@ const flight = flightNames.map((flight) => {
   };
 });
 
-
 const { MongoClient } = require("mongodb");
 require("dotenv").config();
 const { MONGO_URI } = process.env;

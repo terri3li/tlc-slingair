@@ -1,6 +1,5 @@
 "use strict";
 
-// use this package to generate unique ids: https://www.npmjs.com/package/uuid
 const { v4: uuidv4 } = require("uuid");
 const { MongoClient } = require("mongodb");
 const { flights, reservations } = require("./data");
@@ -200,7 +199,7 @@ const addReservation = async (req, res) => {
   }
 };
 
-// ------- updates a specified reservation (not finished)
+// ------- updates a specified reservation 
 const updateReservation = async (req, res) => {
   const client = new MongoClient(MONGO_URI, options);
 
